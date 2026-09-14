@@ -82,7 +82,11 @@ class RecordPreviewConfig(FrigateBaseModel):
     quality: RecordQualityEnum = Field(
         default=RecordQualityEnum.medium,
         title="Preview quality",
-        description="Preview quality level (very_low, low, medium, high, very_high).",
+        description=(
+            "Preview quality level (very_low, low, medium, high, very_high). "
+            "Also controls preview resolution: very_low/low/medium render at "
+            "180p, high at 480p, and very_high at 720p."
+        ),
     )
 
 

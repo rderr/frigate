@@ -31,7 +31,16 @@ PREVIEW_CACHE_DIR = os.path.join(CACHE_DIR, FOLDER_PREVIEW_FRAMES)
 PREVIEW_SEGMENT_DURATION = 3600  # one hour
 # important to have lower keyframe to maintain scrubbing performance
 PREVIEW_KEYFRAME_INTERVAL = 40
-PREVIEW_HEIGHT = 180
+# preview output height in pixels, by quality tier. width is derived to
+# preserve the camera's aspect ratio. very_low/low/medium stay at the
+# historical 180p so existing configs see no change in resolution.
+PREVIEW_QUALITY_RESOLUTIONS = {
+    RecordQualityEnum.very_low: 180,
+    RecordQualityEnum.low: 180,
+    RecordQualityEnum.medium: 180,
+    RecordQualityEnum.high: 480,
+    RecordQualityEnum.very_high: 720,
+}
 PREVIEW_QUALITY_WEBP = {
     RecordQualityEnum.very_low: 70,
     RecordQualityEnum.low: 80,
@@ -39,12 +48,15 @@ PREVIEW_QUALITY_WEBP = {
     RecordQualityEnum.high: 80,
     RecordQualityEnum.very_high: 86,
 }
+# bitrates are scaled to the resolution for each tier above. previews are a
+# sparse, mostly-static VFR stream, so these are generous ceilings rather
+# than bitrates that are actually hit in typical (low-motion) segments.
 PREVIEW_QUALITY_BIT_RATES = {
-    RecordQualityEnum.very_low: 7168,
-    RecordQualityEnum.low: 8196,
-    RecordQualityEnum.medium: 9216,
-    RecordQualityEnum.high: 9864,
-    RecordQualityEnum.very_high: 10096,
+    RecordQualityEnum.very_low: 512,
+    RecordQualityEnum.low: 768,
+    RecordQualityEnum.medium: 1024,
+    RecordQualityEnum.high: 2048,
+    RecordQualityEnum.very_high: 4096,
 }
 # the -qmax param for ffmpeg prevents the encoder from overly compressing frames while still trying to hit the bitrate target
 # lower values are higher quality. This is especially important for iniitial frames in the segment
@@ -220,13 +232,15 @@ class PreviewRecorder:
         self.detect_width: int = config.detect.width
         self.detect_height: int = config.detect.height
 
+        preview_height = PREVIEW_QUALITY_RESOLUTIONS[self.config.record.preview.quality]
+
         if self.detect_width > self.detect_height:
-            self.out_height = PREVIEW_HEIGHT
+            self.out_height = preview_height
             self.out_width = (
                 int((self.detect_width / self.detect_height) * self.out_height) // 4 * 4
             )
         else:
-            self.out_width = PREVIEW_HEIGHT
+            self.out_width = preview_height
             self.out_height = (
                 int((self.detect_height / self.detect_width) * self.out_width) // 4 * 4
             )
