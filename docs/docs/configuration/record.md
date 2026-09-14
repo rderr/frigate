@@ -19,25 +19,18 @@ To keep a specific clip beyond your retention window, [export](/usage/exports) i
 
 H265 recordings can be viewed in Chrome 108+, Edge and Safari only. All other browsers require recordings to be encoded with H264.
 
-## Preview quality
+## Preview quality and resolution
 
-Frigate generates low frame rate preview videos alongside recordings so the timeline can be scrubbed quickly. The `record.preview.quality` setting controls both the compression level and the output resolution of these previews:
-
-| Quality     | Resolution |
-| ----------- | ---------- |
-| `very_low`  | 180p       |
-| `low`       | 180p       |
-| `medium`    | 180p       |
-| `high`      | 480p       |
-| `very_high` | 720p       |
+Frigate generates low frame rate preview videos alongside recordings so the timeline can be scrubbed quickly. The `record.preview.quality` setting controls the compression level of these previews, and `record.preview.height` controls their output resolution (width is derived automatically to preserve the camera's aspect ratio):
 
 ```yaml
 record:
   preview:
-    quality: very_high
+    quality: medium
+    height: 180 # default, height in pixels
 ```
 
-Higher resolutions produce sharper previews when scrubbing the timeline at the cost of additional storage.
+`height` defaults to `180` so existing configurations see no change in resolution. Raising it produces sharper previews when scrubbing the timeline, at the cost of additional storage and encode/decode resources.
 
 ## Common recording configurations
 
